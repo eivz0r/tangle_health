@@ -17,14 +17,14 @@ impl Default for TemplateApp {
         Self {
             // Example stuff:
             label: "Hello World!".to_owned(),
-            value: 2.7,
+            value: 2.5,
         }
     }
 }
 
 impl epi::App for TemplateApp {
     fn name(&self) -> &str {
-        "eframe template"
+        "tangle_health"
     }
 
     /// Called once before the first frame.

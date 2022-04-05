@@ -1,15 +1,15 @@
 [package]
-name = "eframe_template"
-default-run = "eframe_template_bin"
+name = "tangle_health_app"
+default-run = "tangle_health_bin"
 version = "0.1.0"
-authors = ["Emil Ernerfeldt <emil.ernerfeldt@gmail.com>"]
+authors = ["Eivind Rydningen <eivind.rydningen@gmail.com>, Erika Åsberg <erika.aasberg@gmail.com>"]
 edition = "2021"
-rust-version = "1.56"
+rust-version = "1.59"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [[bin]]
-name = "eframe_template_bin"
+name = "tangle_health_bin"
 path = "src/main.rs"
 
 [lib]

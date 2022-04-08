@@ -1,4 +1,9 @@
+use std::f64::consts::TAU;
+
+
 use eframe::{egui, epi};
+use egui::*;
+use plot::*;
 
 #[path = "iota.rs"] mod iota;
 
@@ -37,6 +42,7 @@ impl epi::App for TemplateApp {
         _ctx: &egui::Context,
         _frame: &epi::Frame,
         _storage: Option<&dyn epi::Storage>,
+        _ui: &egui::Ui
     ) {
         // Load previous app state (if any).
         // Note that you must enable the `persistence` feature for this to work.
@@ -123,3 +129,73 @@ impl epi::App for TemplateApp {
         }
     }
 }
+
+struct HelloTest{}
+
+impl HelloTest{
+    fn update(&mut self, ctx: &egui::Context, frame: &epi::Frame){
+        egui::CentralPanel::default().show(ctx, |ui| {
+            // The central panel the region left after adding TopPanel's and SidePanel's
+            ui.vertical_centered(|ui|{
+                ui.heading("Tangle Health");
+                ui.label("Enter your author seed and click to create new iota streams channel");
+        
+            });
+        });
+}
+
+}
+
+#[derive(PartialEq, Eq)]
+enum Panel {
+    Lines
+}
+
+impl Default for Panel {
+    fn default() -> Self {
+        Self::Lines
+    }
+}
+
+#[derive(PartialEq, Default)]
+pub struct PlotDemo {
+    app_demo: TemplateApp,
+    test_demo: HelloTest,
+}
+
+impl super::Demo for PlotDemo {
+    fn name(&self) -> &'static str {
+        "🗠 Plot"
+    }
+
+    fn show(&mut self, ctx: &egui::Context, open: &mut bool) {
+        use super::View as _;
+        egui::CentralPanel::new(self.name())
+            .open(open)
+            .vscroll(false)
+            .show(ctx, |ui| self.ui(ui));
+    }
+}
+
+impl Window for PlotDemo {
+    fn ui(&mut self, ui: &mut Ui) {
+        ui.horizontal(|ui| {
+            ui.label("hello")
+        });
+        ui.separator();
+        ui.horizontal(|ui| {
+            ui.selectable_value(&mut self.open_panel, Panel::TemplateApp, "Template app");
+            ui.selectable_value(&mut self.open_panel, Panel::HelloTest, "Test");
+        });
+        ui.separator();
+
+        match self.open_panel {
+            Panel::TemplateApp => {
+                ui.add(&mut self.app_demo);
+            }
+            Panel::HelloTest => {
+                ui.add(&mut self.test_demo);
+            }
+        }
+    }}
+

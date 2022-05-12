@@ -1,58 +1,57 @@
-use eframe::{egui, epi};
+
+#[path = "iota.rs"] mod iota;
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
-#[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "persistence", serde(default))] // if we add new fields, give them default values when deserializing old state
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct TemplateApp {
     // Example stuff:
-    label: String,
-
-    // this how you opt-out of serialization of a member
-    #[cfg_attr(feature = "persistence", serde(skip))]
-    value: f32,
+    author_seed: String,
+    author_ann_address: String,
+    sub_ann_address: String,
+    sub_seed: String,
+    response: String,
 }
 
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
             // Example stuff:
-            label: "Hello World!".to_owned(),
-            value: 2.5,
+            author_seed: "Enter Author Seed".to_owned(),
+            author_ann_address: "Dummy Author Address".to_owned(),
+            sub_ann_address: "Dummy Sub Address".to_owned(),
+            sub_seed: "Enter Sub Seed".to_owned(),
+            response: "Waiting".to_owned(),
         }
     }
 }
 
-impl epi::App for TemplateApp {
-    fn name(&self) -> &str {
-        "tangle_health"
-    }
-
+impl TemplateApp {
     /// Called once before the first frame.
-    fn setup(
-        &mut self,
-        _ctx: &egui::Context,
-        _frame: &epi::Frame,
-        _storage: Option<&dyn epi::Storage>,
-    ) {
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        // This is also where you can customized the look at feel of egui using
+        // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
+
         // Load previous app state (if any).
         // Note that you must enable the `persistence` feature for this to work.
-        #[cfg(feature = "persistence")]
-        if let Some(storage) = _storage {
-            *self = epi::get_value(storage, epi::APP_KEY).unwrap_or_default()
+        if let Some(storage) = cc.storage {
+            return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
         }
-    }
 
+        Default::default()
+    }
+}
+
+impl eframe::App for TemplateApp {
     /// Called by the frame work to save state before shutdown.
-    /// Note that you must enable the `persistence` feature for this to work.
-    #[cfg(feature = "persistence")]
-    fn save(&mut self, storage: &mut dyn epi::Storage) {
-        epi::set_value(storage, epi::APP_KEY, self);
+    fn save(&mut self, storage: &mut dyn eframe::Storage) {
+        eframe::set_value(storage, eframe::APP_KEY, self);
     }
 
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::Context, frame: &epi::Frame) {
-        let Self { label, value } = self;
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        let Self { author_seed, author_ann_address, sub_ann_address, sub_seed, response } = self;
 
         // Examples of how to create different panels and windows.
         // Pick whichever suits you.
@@ -70,39 +69,29 @@ impl epi::App for TemplateApp {
             });
         });
 
-        egui::SidePanel::left("side_panel").show(ctx, |ui| {
-            ui.heading("Side Panel");
-
-            ui.horizontal(|ui| {
-                ui.label("Write something: ");
-                ui.text_edit_singleline(label);
-            });
-
-            ui.add(egui::Slider::new(value, 0.0..=10.0).text("value"));
-            if ui.button("Increment").clicked() {
-                *value += 1.0;
+        egui::SidePanel::left("left_side_panel").show(ctx, |ui| {
+            ui.heading("Author Panel");
+            ui.label("Enter your author seed and click to create new iota streams channel");
+            ui.text_edit_singleline(author_seed);
+            if ui.button("Create Channel").clicked() {
+                *author_ann_address = iota::create_channel(author_seed.to_string()).unwrap_or_default();
             }
+            ui.text_edit_singleline(author_ann_address);
+        });
 
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
-                ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x = 0.0;
-                    ui.label("powered by ");
-                    ui.hyperlink_to("egui", "https://github.com/emilk/egui");
-                    ui.label(" and ");
-                    ui.hyperlink_to("eframe", "https://github.com/emilk/egui/tree/master/eframe");
-                });
-            });
+        egui::SidePanel::right("right_side_panel").show(ctx, |ui| {
+            ui.heading("Subscriber Panel");
+            ui.label("Enter the announcement link and your seed, then click to subscribe to the IOTA streams channel");
+            ui.text_edit_singleline(sub_seed);
+            ui.text_edit_singleline(sub_ann_address);
+            if ui.button("Subscribe To Channel").clicked() {
+                *response = iota::subscribe_to_channel(sub_seed.to_string(), sub_ann_address.to_string()).unwrap_or_default();
+            }
+            ui.text_edit_singleline(response);
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            // The central panel the region left after adding TopPanel's and SidePanel's
-
-            ui.heading("eframe template");
-            ui.hyperlink("https://github.com/emilk/eframe_template");
-            ui.add(egui::github_link_file!(
-                "https://github.com/emilk/eframe_template/blob/master/",
-                "Source code."
-            ));
+            ui.heading("Health Data Stream");
             egui::warn_if_debug_build(ui);
         });
 

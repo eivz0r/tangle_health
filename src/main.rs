@@ -1,12 +1,16 @@
-#![forbid(unsafe_code)]
-#![cfg_attr(not(debug_assertions), deny(warnings))] // Forbid warnings in release builds
 #![warn(clippy::all, rust_2018_idioms)]
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] //Hide console window in release builds on Windows, this blocks stdout.
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
 // When compiling natively:
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
-    let app = tangle_health::TemplateApp::default();
+    // Log to stdout (if you run with `RUST_LOG=debug`).
+    tracing_subscriber::fmt::init();
+
     let native_options = eframe::NativeOptions::default();
-    eframe::run_native(Box::new(app), native_options);
+    eframe::run_native(
+        "Tangle Health",
+        native_options,
+        Box::new(|cc| Box::new(tangle_health::TemplateApp::new(cc))),
+    );
 }

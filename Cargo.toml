@@ -3,7 +3,7 @@ name = "tangle_health"
 default-run = "tangle_health_bin"
 version = "0.1.0"
 authors = ["Eivind Rydningen <eivind.rydningen@gmail.com>, Erika Åsberg <erika.aasberg@gmail.com>"]
-edition = "2021"
+edition = "2018"
 rust-version = "1.60"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -22,7 +22,7 @@ eframe = { version = "0.18.0", features = ["persistence"] }
 serde = { version = "1", features = ["derive"] } # You only need this if you want app persistence
 # IOTA libs
 tokio = { version = "1.5.0", features = ["full"] }
-anyhow = { version = "1.0" }
+anyhow = { version = "1.0.40" }
 iota-streams = { git = "https://github.com/iotaledger/streams", branch = "develop" }
 bee-message = "=0.1.6"
 bee-rest-api = "=0.1.7"
